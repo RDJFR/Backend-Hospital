@@ -13,7 +13,12 @@ var app = express();
 // Peticion get para obtener todos los usuarios
 //==================================================
 app.get('/', (req, res, next) => {
+    var desde = req.query.desde || 0;
+    desde = Number(desde);
+
     Usuario.find({}, 'nombre email img role')
+        .skip(desde) // para decirle desde donde empieza la paginacion
+        .limit(5) // Cantidad máxima de elementos a mostrar
         .exec(
             (err, usuarios) => {
                 if (err) {
@@ -24,10 +29,14 @@ app.get('/', (req, res, next) => {
                     });
                 }
 
-                res.status(200).json({
-                    ok: true,
-                    usuarios
+                Usuario.count({}, (err, conteo) => {
+                    res.status(200).json({
+                        ok: true,
+                        usuarios,
+                        total: conteo
+                    });
                 });
+
             });
 });
 
